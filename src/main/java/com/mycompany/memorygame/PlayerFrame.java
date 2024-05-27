@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +35,6 @@ public class PlayerFrame extends JFrame {
         panel = new JPanel(new GridLayout(4, 1, 0, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        // Create smaller buttons
         Font buttonFont = new Font("Roboto", Font.PLAIN, 14);
         bt_Start.setFont(buttonFont);
         bt_ViewResults.setFont(buttonFont);
@@ -50,19 +49,16 @@ public class PlayerFrame extends JFrame {
         mainContainer.add(welcomeLabel, BorderLayout.NORTH);
         mainContainer.add(panel, BorderLayout.CENTER);
 
-        if (!UserController.hasUserRecord(username)) {
-            UserController.createInitialRecord(username);
-        }
-
+//        if (!UserController.hasUserRecord(username)) {
+//          UserController.createInitialRecord(username);
+//    }
         bt_Logout.addActionListener((ActionEvent e) -> {
             UIUtil.showFrame(new LogIn());
             setVisible(false);
         });
 
         bt_Start.addActionListener((ActionEvent e) -> {
-
             UIUtil.showFrame(new MemoryGame(1, 0, username));
-
         });
 
         bt_ViewResults.addActionListener((ActionEvent e) -> {

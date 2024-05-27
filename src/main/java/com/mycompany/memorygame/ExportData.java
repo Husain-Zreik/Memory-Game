@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 import java.io.*;
 import java.sql.*;
@@ -35,7 +35,7 @@ public class ExportData {
 
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Export Users");
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // Allow selecting a directory
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int userSelection = fileChooser.showSaveDialog(null);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File selectedDirectory = fileChooser.getSelectedFile();

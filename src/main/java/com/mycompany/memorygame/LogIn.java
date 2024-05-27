@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 import javax.swing.*;
 import java.awt.*;

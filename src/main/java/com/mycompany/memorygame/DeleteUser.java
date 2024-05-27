@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 import java.sql.*;
 import javax.swing.*;
@@ -42,22 +42,7 @@ public class DeleteUser extends JFrame {
             String selectedItem = (String) userComboBox.getSelectedItem();
             if (selectedItem != null) {
                 String selectedUser = selectedItem.split(" - ")[0];
-                Connection conn = DBConnection.getConnection();
-                String query = "DELETE FROM dbo.users WHERE user_id='" + selectedUser + "'";
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(query);
-                    UIUtil.showSuccess("User deleted successfully!");
-                } catch (SQLException ex) {
-                    UIUtil.showError("SQL Error: " + ex.getMessage());
-                } finally {
-                    try {
-                        conn.close();
-                    } catch (SQLException ex) {
-                        UIUtil.showError("Error closing connection: " + ex.getMessage());
-                    }
-                }
-                UIUtil.showFrame(new AdminFrame());
-                setVisible(false);
+                deleteUserData(Integer.parseInt(selectedUser));
             } else {
                 UIUtil.showError("No user selected!");
             }
@@ -89,4 +74,35 @@ public class DeleteUser extends JFrame {
             }
         }
     }
+
+    private void deleteUserData(int userId) {
+        Connection conn = DBConnection.getConnection();
+        String deleteResultsQuery = "DELETE FROM dbo.results WHERE user_id = ?";
+        String deleteUserQuery = "DELETE FROM dbo.users WHERE user_id = ?";
+
+        try (
+                PreparedStatement deleteResultsStmt = conn.prepareStatement(deleteResultsQuery); 
+                PreparedStatement deleteUserStmt = conn.prepareStatement(deleteUserQuery)) {
+
+            deleteResultsStmt.setInt(1, userId);
+            deleteResultsStmt.executeUpdate();
+
+            deleteUserStmt.setInt(1, userId);
+            deleteUserStmt.executeUpdate();
+
+            UIUtil.showSuccess("User and associated results deleted successfully!");
+            UIUtil.showFrame(new AdminFrame());
+            setVisible(false);
+
+        } catch (SQLException ex) {
+            UIUtil.showError("SQL Error: " + ex.getMessage());
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException ex) {
+                UIUtil.showError("Error closing connection: " + ex.getMessage());
+            }
+        }
+    }
+
 }

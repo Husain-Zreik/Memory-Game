@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 public class Player {
     private String username;

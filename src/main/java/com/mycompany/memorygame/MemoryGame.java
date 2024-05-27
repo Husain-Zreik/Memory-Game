@@ -1,4 +1,4 @@
-package com.mycompany.datagame;
+package com.mycompany.memorygame;
 
 import javax.swing.*;
 import java.sql.*;
@@ -14,8 +14,8 @@ public class MemoryGame extends JFrame {
     private final JButton[][] buttons;
     private final List<Integer> sequence = new ArrayList<>();
     private int currentIndex = 0;
-    private int level;
-    private int gridSize;
+    private final int level;
+    private final int gridSize;
     private final int minGridSize = 2;
     private final int maxGridSize = 5;
     private final JLabel levelLabel;
@@ -23,14 +23,14 @@ public class MemoryGame extends JFrame {
     private final JLabel timerLabel;
     private final JButton exitButton;
     private int score = 0;
-    private String username;
+    private final String username;
     private int timeElapsed = 0;
     private Timer timer;
     private boolean buttonClickable = false;
     private final int totalLevels = 3;
     private final int timeLimit = 30;
     private Color[] colors;
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public MemoryGame(int level, int score, String username) {
         super("Memory Game");
@@ -39,26 +39,24 @@ public class MemoryGame extends JFrame {
         this.score = score;
         this.gridSize = Math.min(minGridSize + level - 1, maxGridSize);
         this.setSize(500, 500);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        JPanel statPanel = new JPanel(new GridLayout(2, 1, 0, 10));
+        JPanel statPanel = new JPanel(new GridLayout(3, 1, 0, 10));
         JPanel westPanel = new JPanel(new BorderLayout());
 
-        levelLabel = new JLabel("Level: " + level);
-        scoreLabel = new JLabel("Score: " + score);
-        timerLabel = new JLabel("Time: 0s");
+        levelLabel = new JLabel("Level: " + level, JLabel.CENTER);
+        scoreLabel = new JLabel("Score: " + score, JLabel.CENTER);
+        timerLabel = new JLabel("Time: 0s", JLabel.CENTER);
         exitButton = new JButton("Exit");
-        exitButton.addActionListener(e -> {
-            dispose();
-        });
+        exitButton.addActionListener(e -> dispose());
 
+        statPanel.add(levelLabel);
         statPanel.add(scoreLabel);
         statPanel.add(timerLabel);
 
-        westPanel.add(levelLabel, BorderLayout.NORTH);
         westPanel.add(statPanel, BorderLayout.CENTER);
         westPanel.add(exitButton, BorderLayout.SOUTH);
-
-        westPanel.setPreferredSize(new Dimension(100, 100));
+        westPanel.setPreferredSize(new Dimension(120, 100));
 
         panel = new JPanel(new GridLayout(gridSize, gridSize));
         buttons = new JButton[gridSize][gridSize];
@@ -78,7 +76,7 @@ public class MemoryGame extends JFrame {
         centerPanel.add(panel, BorderLayout.CENTER);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(new JLabel("Hi, let's play!", JLabel.CENTER), BorderLayout.NORTH);
+        mainPanel.add(new JLabel("Hi "+username+", let's play!", JLabel.CENTER), BorderLayout.NORTH);
         mainPanel.add(westPanel, BorderLayout.WEST);
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -86,8 +84,7 @@ public class MemoryGame extends JFrame {
 
         generateColors();
         generateSequence();
-        lightUpSequence();
-        startTimer();
+        startLevelWithDelay();
     }
 
     private void generateColors() {
@@ -101,8 +98,15 @@ public class MemoryGame extends JFrame {
         sequence.clear();
         int sequenceLength = level + 4;
         for (int i = 0; i < sequenceLength; i++) {
-            sequence.add((int) (Math.random() * (gridSize * gridSize)));
+            sequence.add(random.nextInt(gridSize * gridSize));
         }
+    }
+
+    private void startLevelWithDelay() {
+        disableButtons();
+        timer = new Timer(2000, e -> lightUpSequence());
+        timer.setRepeats(false);
+        timer.start();
     }
 
     private void lightUpSequence() {
@@ -118,26 +122,26 @@ public class MemoryGame extends JFrame {
                     Thread.sleep(300);
                 }
                 enableButtons();
+                startTimer();
             } catch (InterruptedException e) {
-                UIUtil.showError("Light Error" + e.getMessage());
-
+                UIUtil.showError("Light Error: " + e.getMessage());
             }
         }).start();
     }
 
     private void disableButtons() {
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < gridSize; j++) {
-                buttons[i][j].setEnabled(false);
+        for (JButton[] row : buttons) {
+            for (JButton button : row) {
+                button.setEnabled(false);
             }
         }
     }
 
     private void enableButtons() {
         buttonClickable = true;
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < gridSize; j++) {
-                buttons[i][j].setEnabled(true);
+        for (JButton[] row : buttons) {
+            for (JButton button : row) {
+                button.setEnabled(true);
             }
         }
     }
@@ -150,42 +154,39 @@ public class MemoryGame extends JFrame {
         JButton button = (JButton) e.getSource();
         int index = getButtonIndex(button);
 
-        // Check if the button clicked matches the sequence
         if (index == sequence.get(currentIndex)) {
-            // Highlight the clicked button
             button.setBackground(Color.WHITE);
-            Timer timer1 = new Timer(500, evt -> {
+            Timer highlightTimer = new Timer(500, evt -> {
                 button.setBackground(Color.BLACK);
                 currentIndex++;
                 if (currentIndex == sequence.size()) {
-                    // User successfully repeated the sequence
                     currentIndex = 0;
-                    score += (1000 - timeElapsed); // Bonus points for speed
+                    score += (1000 - timeElapsed);
                     showLevelCompleteDialog();
                 }
-                enableButtons(); // Re-enable buttons after showing the result
-                buttonClickable = true; // Re-enable button clicks
+                enableButtons();
             });
-            timer1.setRepeats(false); // Run the timer only once
-            timer1.start();
+            highlightTimer.setRepeats(false);
+            highlightTimer.start();
         } else {
-            score -= 50; // Penalty for incorrect click
+            score -= 50;
             scoreLabel.setText("Score: " + score);
             endGame("Game Over! You clicked the wrong button.");
         }
 
-        // Update score for correct click
         score += 10;
         scoreLabel.setText("Score: " + score);
     }
 
     private void showLevelCompleteDialog() {
         disableButtons();
-        timer.stop();
+        if (timer != null) {
+            timer.stop();
+        }
         updateRecordInDatabase();
 
         int result = JOptionPane.showOptionDialog(this,
-                "Congratulations! You completed level " + level + ".\nYour current score: " + this.score,
+                "Congratulations! You completed level " + level + ".\nYour current score: " + score,
                 "Level Complete",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE,
@@ -194,7 +195,6 @@ public class MemoryGame extends JFrame {
                 "Continue to Next Level");
 
         if (result == JOptionPane.YES_OPTION) {
-            // Continue to the next level
             if (level < totalLevels) {
                 UIUtil.showFrame(new MemoryGame(level + 1, score, username));
                 dispose();
@@ -202,7 +202,6 @@ public class MemoryGame extends JFrame {
                 endGame("Congratulations! You completed all levels.");
             }
         } else {
-            // Return to menu
             dispose();
         }
     }
@@ -240,12 +239,13 @@ public class MemoryGame extends JFrame {
     }
 
     private void updateRecordInDatabase() {
-        try (Connection connection = DBConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(
+        try (Connection connection = DBConnection.getConnection(); PreparedStatement getStatement = connection.prepareStatement(
                 "SELECT score, level FROM results WHERE user_id = ?"); PreparedStatement updateStatement = connection.prepareStatement(
                         "UPDATE results SET score = ?, level = ? WHERE user_id = ?")) {
 
-            statement.setInt(1, UserController.getUserId(username));
-            ResultSet resultSet = statement.executeQuery();
+            int userId = UserController.getUserId(username);
+            getStatement.setInt(1, userId);
+            ResultSet resultSet = getStatement.executeQuery();
 
             int currentScore = 0;
             int currentLevel = 0;
@@ -256,16 +256,14 @@ public class MemoryGame extends JFrame {
             }
 
             int updatedScore = currentScore + score;
-
             int updatedLevel = Math.max(currentLevel, level);
 
             updateStatement.setInt(1, updatedScore);
             updateStatement.setInt(2, updatedLevel);
-            updateStatement.setInt(3, UserController.getUserId(username));
+            updateStatement.setInt(3, userId);
             updateStatement.executeUpdate();
         } catch (SQLException e) {
             UIUtil.showError("Error updating user record: " + e.getMessage());
         }
     }
-
 }
