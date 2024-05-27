@@ -27,7 +27,7 @@ public class MemoryGame extends JFrame {
     private int timeElapsed = 0;
     private Timer timer;
     private boolean buttonClickable = false;
-    private final int totalLevels = 3;
+    private final int totalLevels = 10;
     private final int timeLimit = 30;
     private Color[] colors;
     private final Random random = new Random();

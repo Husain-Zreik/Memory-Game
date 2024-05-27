@@ -39,7 +39,7 @@ public class DisplayUsers {
         tableFrame.add(buttonPanel, "South");
         tableFrame.add(scrollPane);
         tableFrame.pack();
-        tableFrame.setSize(300, 200);
+        tableFrame.setSize(350, 250);
         tableFrame.setLocationRelativeTo(null);
         tableFrame.setVisible(true);
 

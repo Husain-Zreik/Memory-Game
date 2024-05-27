@@ -94,7 +94,21 @@ public class PlayerFrame extends JFrame {
             JScrollPane scrollPane = new JScrollPane(table);
             table.setFillsViewportHeight(true);
 
-            JOptionPane.showMessageDialog(this, scrollPane, "Top Players", JOptionPane.INFORMATION_MESSAGE);
+            JDialog dialog = new JDialog(this, "Top Players", true);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.getContentPane().setLayout(new BorderLayout());
+
+            dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener((ActionEvent evt) -> {
+                dialog.dispose();
+            });
+
+            dialog.getContentPane().add(okButton, BorderLayout.SOUTH);
+            dialog.setSize(400, 300);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
         });
 
     }
